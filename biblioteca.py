@@ -2,6 +2,9 @@ import sys
 import fbx
 
 def Initialization(filepath):
+    '''
+    Inicialização geral do ambiente, necessita do caminho para um arquivo fbx.
+    '''
     manager = fbx.FbxManager.Create()
     importer = fbx.FbxImporter.Create(manager, '')
     status = importer.Initialize(filepath)
@@ -15,13 +18,15 @@ def Initialization(filepath):
     return manager, importer, scene
 
 def Closing(manager, importer):
-
+    '''
+    Fechamento do ambiente.
+    '''
     manager.Destroy()
     importer.Destroy()
 
 def ReturnRightArmNodes(scene):
     '''
-    Função recebe o caminho para o arquivo .fbx
+    Função recebe um objeto da classe fbx.FbxScene.
     Retornando uma lista contendo todos os nodos referentes ao braço direito.
     Nodos que estão na lista são da classe fbx.FbxNode
     '''
@@ -60,12 +65,12 @@ def GetDatafromNode(node, time):
         Tupla com dados da escala do nodo (x, y, z)
         Posição temporal destes dados
     '''
-    print('a')
+    
     timer = fbx.FbxTime()
     timer.SetSecondDouble(time)
-    print('b')
+    
     pivot = node.eSourcePivot
-    print('c')
+    
     matrix = node.EvaluateGlobalTransform(timer, pivot)
 
     node_rotacao = matrix.GetR()
