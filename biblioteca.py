@@ -1,13 +1,7 @@
 import sys
 import fbx
 
-def ReturnRightArmNodes(filepath):
-    '''
-    Função recebe o caminho para o arquivo .fbx
-    Retornando uma lista contendo todos os nodos referentes ao braço direito.
-    Nodos que estão na lista são da classe fbx.FbxNode
-    '''
-    handnode_list = []
+def Initialization(filepath):
     manager = fbx.FbxManager.Create()
     importer = fbx.FbxImporter.Create(manager, '')
     status = importer.Initialize(filepath)
@@ -15,8 +9,24 @@ def ReturnRightArmNodes(filepath):
     if status == False:
         sys.exit()
 
-    scene = fbx.FbxScene.GetRootNode()
+    scene = fbx.FbxScene.Create(manager, '')
     importer.Import(scene)
+
+    return manager, importer, scene
+
+def Closing(manager, importer):
+
+    manager.Destroy()
+    importer.Destroy()
+
+def ReturnRightArmNodes(scene):
+    '''
+    Função recebe o caminho para o arquivo .fbx
+    Retornando uma lista contendo todos os nodos referentes ao braço direito.
+    Nodos que estão na lista são da classe fbx.FbxNode
+    '''
+    handnode_list = []
+
     rootNode = scene.GetRootNode()
     right_arm_list = ['RightShoulder', 'RightArm', 'RightForeArm', 'RightHand',
                       'RightHandThumb1', 'RightHandThumb2', 'RightHandThumb3',
@@ -38,13 +48,9 @@ def ReturnRightArmNodes(filepath):
 
     traverse(rootNode)
 
-    print(handnode_list)
-    importer.Destroy()
-    manager.Destroy()
-
     return handnode_list
 
-def GetDatafromNode(node, filepath, time):
+def GetDatafromNode(node, time):
     '''
     Função recebe um nodo fbx.FbxNode, o caminho para o arquivo .fbx, um float com o tempo exato a ser inspecionado.
     Função retorna um dicionário contendo:
@@ -54,21 +60,13 @@ def GetDatafromNode(node, filepath, time):
         Tupla com dados da escala do nodo (x, y, z)
         Posição temporal destes dados
     '''
-
-    manager = fbx.FbxManager.Create()
-    importer = fbx.FbxImporter.Create(manager, '')
-    status = importer.Initialize(filepath)
-
-    if status == False:
-        sys.exit()
-
-    scene = fbx.FbxScene.GetRootNode()
-    importer.Import(scene)
-
+    print('a')
     timer = fbx.FbxTime()
     timer.SetSecondDouble(time)
-
-    matrix = node.EvaluateGlobalTransform(timer, node.eSourcePivot)
+    print('b')
+    pivot = node.eSourcePivot
+    print('c')
+    matrix = node.EvaluateGlobalTransform(timer, pivot)
 
     node_rotacao = matrix.GetR()
     node_translacao = matrix.GetT()
@@ -77,12 +75,9 @@ def GetDatafromNode(node, filepath, time):
     node_dictionary = {
         'Name' : node.GetName(),
         'Rotation' : (node_rotacao[0], node_rotacao[1], node_rotacao[2]),
-        'Translation' : (node_translacao[0], (node_translacao[1], node_translacao[2])),
+        'Translation' : (node_translacao[0], node_translacao[1], node_translacao[2]),
         'Scaling' : (node_escala[0], node_escala[1], node_escala[2]),
         'Time' : time
     }
-
-    importer.Destroy()
-    manager.Destroy()
 
     return node_dictionary
